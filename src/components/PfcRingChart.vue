@@ -100,21 +100,22 @@ const cy = computed(() => props.size / 2)
 <style scoped>
 .chart-container {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .chart-container svg {
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
 }
 
 .center-text {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   z-index: 1;
+  width: 100%;
 }
 
 .kcal-value {

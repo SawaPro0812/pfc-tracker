@@ -224,6 +224,7 @@ const formatDate = (ds) => {
 <style scoped>
 .screen {
   padding: 20px 16px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   min-height: 100dvh;
 }
 

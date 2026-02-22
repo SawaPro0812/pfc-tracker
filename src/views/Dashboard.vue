@@ -90,7 +90,7 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
           :fat="totals.fat"
           :carb="totals.carb"
           :target-calories="settings.target_calories"
-          :size="160"
+          :size="148"
         />
         <div class="pfc-legend">
           <div class="legend-item">
@@ -202,6 +202,7 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 <style scoped>
 .screen {
   padding: 20px 16px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   min-height: 100dvh;
 }
 
@@ -250,7 +251,7 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 .chart-row {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
 .pfc-legend {
@@ -263,8 +264,9 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
+  gap: 4px;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .dot {
@@ -278,18 +280,22 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 .dot.c { background: #34d399; }
 
 .legend-label {
-  flex: 1;
+  flex: 0 1 auto;
   color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .legend-val {
   font-weight: 700;
   color: #e2e8f0;
+  white-space: nowrap;
 }
 
 .legend-target {
   color: #64748b;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 /* プログレスバー */
@@ -333,8 +339,9 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 .progress-remaining {
   font-size: 0.75rem;
   color: #64748b;
-  width: 58px;
+  min-width: 58px;
   text-align: right;
+  white-space: nowrap;
 }
 
 /* 食事ログ */
