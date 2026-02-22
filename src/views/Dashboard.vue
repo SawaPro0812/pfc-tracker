@@ -84,32 +84,44 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 
     <!-- 円グラフ + サマリー -->
     <section class="chart-section card">
-      <div class="chart-row">
+      <div class="chart-center">
         <PfcRingChart
           :protein="totals.protein"
           :fat="totals.fat"
           :carb="totals.carb"
           :target-calories="settings.target_calories"
-          :size="148"
+          :size="160"
         />
-        <div class="pfc-legend">
-          <div class="legend-item">
-            <span class="dot p"></span>
+      </div>
+      <div class="pfc-legend">
+        <div class="legend-item">
+          <span class="dot p"></span>
+          <div class="legend-content">
             <span class="legend-label">タンパク質</span>
-            <span class="legend-val">{{ Math.round(totals.protein) }}g</span>
-            <span class="legend-target">/ {{ settings.target_p }}g</span>
+            <div class="legend-nums">
+              <span class="legend-val">{{ Math.round(totals.protein) }}g</span>
+              <span class="legend-target">/ {{ settings.target_p }}g</span>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="dot f"></span>
+        </div>
+        <div class="legend-item">
+          <span class="dot f"></span>
+          <div class="legend-content">
             <span class="legend-label">脂質</span>
-            <span class="legend-val">{{ Math.round(totals.fat) }}g</span>
-            <span class="legend-target">/ {{ settings.target_f }}g</span>
+            <div class="legend-nums">
+              <span class="legend-val">{{ Math.round(totals.fat) }}g</span>
+              <span class="legend-target">/ {{ settings.target_f }}g</span>
+            </div>
           </div>
-          <div class="legend-item">
-            <span class="dot c"></span>
+        </div>
+        <div class="legend-item">
+          <span class="dot c"></span>
+          <div class="legend-content">
             <span class="legend-label">炭水化物</span>
-            <span class="legend-val">{{ Math.round(totals.carb) }}g</span>
-            <span class="legend-target">/ {{ settings.target_c }}g</span>
+            <div class="legend-nums">
+              <span class="legend-val">{{ Math.round(totals.carb) }}g</span>
+              <span class="legend-target">/ {{ settings.target_c }}g</span>
+            </div>
           </div>
         </div>
       </div>
@@ -119,43 +131,40 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
     <section class="card progress-section">
       <h2>摂取状況</h2>
       <div class="progress-row">
-        <span class="progress-label">P</span>
+        <span class="progress-label p-label">P</span>
         <div class="progress-bar-wrap">
           <div
-            class="progress-bar"
-            :style="{
-              width: barWidth(totals.protein, settings.target_p) + '%',
-              background: barColor(totals.protein, settings.target_p),
-            }"
+            class="progress-bar p-bar"
+            :style="{ width: barWidth(totals.protein, settings.target_p) + '%' }"
           />
         </div>
-        <span class="progress-remaining">残 {{ Math.round(remaining.protein) }}g</span>
+        <span class="progress-remaining" :class="{ exceeded: totals.protein > settings.target_p }">
+          {{ totals.protein > settings.target_p ? '超 ' + Math.round(totals.protein - settings.target_p) + 'g' : '残 ' + Math.round(remaining.protein) + 'g' }}
+        </span>
       </div>
       <div class="progress-row">
-        <span class="progress-label">F</span>
+        <span class="progress-label f-label">F</span>
         <div class="progress-bar-wrap">
           <div
-            class="progress-bar"
-            :style="{
-              width: barWidth(totals.fat, settings.target_f) + '%',
-              background: barColor(totals.fat, settings.target_f),
-            }"
+            class="progress-bar f-bar"
+            :style="{ width: barWidth(totals.fat, settings.target_f) + '%' }"
           />
         </div>
-        <span class="progress-remaining">残 {{ Math.round(remaining.fat) }}g</span>
+        <span class="progress-remaining" :class="{ exceeded: totals.fat > settings.target_f }">
+          {{ totals.fat > settings.target_f ? '超 ' + Math.round(totals.fat - settings.target_f) + 'g' : '残 ' + Math.round(remaining.fat) + 'g' }}
+        </span>
       </div>
       <div class="progress-row">
-        <span class="progress-label">C</span>
+        <span class="progress-label c-label">C</span>
         <div class="progress-bar-wrap">
           <div
-            class="progress-bar"
-            :style="{
-              width: barWidth(totals.carb, settings.target_c) + '%',
-              background: barColor(totals.carb, settings.target_c),
-            }"
+            class="progress-bar c-bar"
+            :style="{ width: barWidth(totals.carb, settings.target_c) + '%' }"
           />
         </div>
-        <span class="progress-remaining">残 {{ Math.round(remaining.carb) }}g</span>
+        <span class="progress-remaining" :class="{ exceeded: totals.carb > settings.target_c }">
+          {{ totals.carb > settings.target_c ? '超 ' + Math.round(totals.carb - settings.target_c) + 'g' : '残 ' + Math.round(remaining.carb) + 'g' }}
+        </span>
       </div>
     </section>
 
@@ -179,14 +188,16 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
           class="meal-item"
         >
           <div class="meal-info">
-            <span class="meal-name">{{ item.food_name }}</span>
-            <span class="meal-amount">{{ item.amount }}g</span>
-          </div>
-          <div class="meal-pfc">
-            <span class="p">P{{ Math.round(item.protein) }}</span>
-            <span class="f">F{{ Math.round(item.fat) }}</span>
-            <span class="c">C{{ Math.round(item.carb) }}</span>
-            <span class="kcal">{{ Math.round(item.calories) }}kcal</span>
+            <div class="meal-name-row">
+              <span class="meal-name">{{ item.food_name }}</span>
+              <span class="meal-amount">{{ item.amount }}g</span>
+            </div>
+            <div class="meal-pfc">
+              <span class="p">P{{ Math.round(item.protein) }}</span>
+              <span class="f">F{{ Math.round(item.fat) }}</span>
+              <span class="c">C{{ Math.round(item.carb) }}</span>
+              <span class="kcal">{{ Math.round(item.calories) }}kcal</span>
+            </div>
           </div>
           <button class="del-btn" @click="removeLog(item.id)" title="削除">×</button>
         </div>
@@ -245,28 +256,29 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 
 /* チャート */
 .chart-section {
-  padding: 20px 16px;
+  padding: 16px;
 }
 
-.chart-row {
+.chart-center {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  justify-content: center;
+  margin-bottom: 14px;
 }
 
 .pfc-legend {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
 .legend-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 0.78rem;
-  white-space: nowrap;
+  padding: 8px 4px;
+  background: #0d1117;
+  border-radius: 8px;
 }
 
 .dot {
@@ -279,23 +291,34 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 .dot.f { background: #f59e0b; }
 .dot.c { background: #34d399; }
 
+.legend-content {
+  text-align: center;
+}
+
 .legend-label {
-  flex: 0 1 auto;
+  display: block;
+  font-size: 0.68rem;
   color: #94a3b8;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.legend-nums {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
 }
 
 .legend-val {
+  font-size: 0.9rem;
   font-weight: 700;
   color: #e2e8f0;
-  white-space: nowrap;
 }
 
 .legend-target {
   color: #64748b;
-  font-size: 0.72rem;
-  white-space: nowrap;
+  font-size: 0.65rem;
 }
 
 /* プログレスバー */
@@ -318,8 +341,11 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
   width: 16px;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #94a3b8;
 }
+
+.p-label { color: #a78bfa; }
+.f-label { color: #f59e0b; }
+.c-label { color: #34d399; }
 
 .progress-bar-wrap {
   flex: 1;
@@ -336,12 +362,21 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
   min-width: 0;
 }
 
+.p-bar { background: #a78bfa; }
+.f-bar { background: #f59e0b; }
+.c-bar { background: #34d399; }
+
 .progress-remaining {
   font-size: 0.75rem;
   color: #64748b;
-  min-width: 58px;
+  min-width: 62px;
   text-align: right;
   white-space: nowrap;
+}
+
+.progress-remaining.exceeded {
+  color: #f87171;
+  font-weight: 600;
 }
 
 /* 食事ログ */
@@ -406,7 +441,7 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
 
 .meal-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 10px 12px;
   background: #0d1117;
@@ -419,24 +454,30 @@ const mealTypeLabel = { breakfast: '朝食', lunch: '昼食', dinner: '夕食', 
   min-width: 0;
 }
 
+.meal-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 5px;
+  flex-wrap: wrap;
+}
+
 .meal-name {
-  display: block;
   font-size: 0.875rem;
   color: #e2e8f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .meal-amount {
   font-size: 0.75rem;
   color: #64748b;
+  flex-shrink: 0;
 }
 
 .meal-pfc {
   display: flex;
   gap: 4px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .meal-pfc span {

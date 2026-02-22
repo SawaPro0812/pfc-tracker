@@ -150,7 +150,7 @@ const genderOptions = [
         <label>活動量</label>
         <select v-model="form.activity_level">
           <option v-for="l in ACTIVITY_LEVELS" :key="l.value" :value="l.value">
-            {{ l.label }}
+            {{ l.label }}（×{{ l.factor }}）
           </option>
         </select>
       </div>
@@ -407,13 +407,17 @@ const genderOptions = [
 
 .action-info {
   flex: 1;
+  min-width: 0;
 }
 
 .action-title {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   color: #e2e8f0;
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .action-desc {

@@ -90,14 +90,42 @@ async function addManual() {
 const mySets = ref([])
 const showSetForm = ref(false)
 const newSetName = ref('')
-// セット作成は検索で複数選択してまとめる簡易版
 const setItems = ref([]) // { food_name, amount, protein, fat, carb, calories }
+const newItem = ref({ food_name: '', amount: 100, protein: 0, fat: 0, carb: 0, calories: 0 })
 
 async function loadMySets() {
   mySets.value = await getMySets()
 }
 
 onMounted(loadMySets)
+
+function addItemToSet() {
+  if (!newItem.value.food_name.trim()) return
+  const kcal = Number(newItem.value.calories) ||
+    Math.round(newItem.value.protein * 4 + newItem.value.fat * 9 + newItem.value.carb * 4)
+  setItems.value.push({
+    food_name: newItem.value.food_name,
+    amount: Number(newItem.value.amount) || 100,
+    protein: Number(newItem.value.protein) || 0,
+    fat: Number(newItem.value.fat) || 0,
+    carb: Number(newItem.value.carb) || 0,
+    calories: kcal,
+  })
+  newItem.value = { food_name: '', amount: 100, protein: 0, fat: 0, carb: 0, calories: 0 }
+}
+
+function removeItemFromSet(index) {
+  setItems.value.splice(index, 1)
+}
+
+async function saveSet() {
+  if (!newSetName.value.trim() || setItems.value.length === 0) return
+  await addMySet({ name: newSetName.value, items: [...setItems.value] })
+  await loadMySets()
+  newSetName.value = ''
+  setItems.value = []
+  showSetForm.value = false
+}
 
 async function useSet(set) {
   const promises = set.items.map(item => addMealLog({
@@ -150,6 +178,7 @@ const mealTypeOptions = [
         </div>
       </div>
     </section>
+
 
     <!-- タブ -->
     <div class="tab-bar">
@@ -252,10 +281,82 @@ const mealTypeOptions = [
 
     <!-- ===== マイセット ===== -->
     <div v-if="activeTab === 'myset'" class="tab-content">
-      <div v-if="mySets.length === 0" class="empty-state">
-        <p>マイセットがありません</p>
-        <p class="sub">食品検索後に「マイセットに保存」で登録できます</p>
+      <!-- 新規作成ボタン -->
+      <button class="btn-new-set" @click="showSetForm = !showSetForm; setItems = []; newSetName = ''">
+        {{ showSetForm ? '× キャンセル' : '+ 新規マイセット作成' }}
+      </button>
+
+      <!-- 作成フォーム -->
+      <div v-if="showSetForm" class="card set-form-card">
+        <div class="form-group">
+          <label>セット名 *</label>
+          <input type="text" v-model="newSetName" placeholder="例: 朝食セット" />
+        </div>
+
+        <div class="set-item-form">
+          <p class="form-section-title">アイテムを追加</p>
+          <div class="form-group">
+            <label>食品名 *</label>
+            <input type="text" v-model="newItem.food_name" placeholder="例: 鶏むね肉" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>量 (g)</label>
+              <input type="number" v-model="newItem.amount" min="1" />
+            </div>
+            <div class="form-group">
+              <label>カロリー (kcal)</label>
+              <input type="number" v-model="newItem.calories" min="0" placeholder="自動計算" />
+            </div>
+          </div>
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label class="p-label">P (g)</label>
+              <input type="number" v-model="newItem.protein" min="0" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label class="f-label">F (g)</label>
+              <input type="number" v-model="newItem.fat" min="0" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label class="c-label">C (g)</label>
+              <input type="number" v-model="newItem.carb" min="0" step="0.1" />
+            </div>
+          </div>
+          <button class="btn-add-item" @click="addItemToSet" :disabled="!newItem.food_name.trim()">
+            + アイテムを追加
+          </button>
+        </div>
+
+        <!-- 追加済みアイテム -->
+        <div v-if="setItems.length > 0" class="set-preview-list">
+          <p class="form-section-title">追加済み ({{ setItems.length }}件)</p>
+          <div v-for="(item, i) in setItems" :key="i" class="set-preview-item">
+            <div class="set-preview-info">
+              <span class="set-item-name">{{ item.food_name }}</span>
+              <span class="set-item-amount">{{ item.amount }}g</span>
+              <span class="set-item-macros">P{{ Math.round(item.protein) }} F{{ Math.round(item.fat) }} C{{ Math.round(item.carb) }}</span>
+            </div>
+            <button class="del-btn" @click="removeItemFromSet(i)">×</button>
+          </div>
+        </div>
+
+        <button
+          class="btn-primary"
+          @click="saveSet"
+          :disabled="!newSetName.trim() || setItems.length === 0"
+          style="margin-top: 12px;"
+        >
+          マイセットを保存
+        </button>
       </div>
+
+      <!-- 既存セットなし -->
+      <div v-if="mySets.length === 0 && !showSetForm" class="empty-state">
+        <p>マイセットがありません</p>
+        <p class="sub">「新規マイセット作成」から登録できます</p>
+      </div>
+
       <div v-for="set in mySets" :key="set.id" class="set-card card">
         <div class="set-header">
           <span class="set-name">{{ set.name }}</span>
@@ -320,8 +421,8 @@ const mealTypeOptions = [
 
 .meta-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .form-group {
@@ -506,6 +607,96 @@ const mealTypeOptions = [
 }
 
 /* マイセット */
+.btn-new-set {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed #2563eb;
+  color: #60a5fa;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all 0.15s;
+}
+
+.btn-new-set:hover {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+.set-form-card {
+  margin-bottom: 16px;
+}
+
+.form-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px;
+}
+
+.set-item-form {
+  border-top: 1px solid #2a2a4a;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.form-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.form-group label.p-label { color: #a78bfa; }
+.form-group label.f-label { color: #f59e0b; }
+.form-group label.c-label { color: #34d399; }
+
+.btn-add-item {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid #2a2a4a;
+  color: #94a3b8;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s;
+}
+
+.btn-add-item:hover:not(:disabled) {
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+.btn-add-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.set-preview-list {
+  border-top: 1px solid #2a2a4a;
+  padding-top: 10px;
+  margin-top: 12px;
+}
+
+.set-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1e2a3a;
+}
+
+.set-preview-info {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
 .empty-state {
   text-align: center;
   padding: 30px 0;

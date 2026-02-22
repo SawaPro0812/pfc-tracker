@@ -71,8 +71,7 @@ const cy = computed(() => props.size / 2)
         stroke="#2a2a4a"
         :stroke-width="STROKE"
         stroke-dasharray="1 0"
-        transform="rotate(-90)"
-        :transform-origin="`${cx} ${cy}`"
+        :transform="`rotate(-90, ${cx}, ${cy})`"
       />
       <!-- PFCセグメント -->
       <circle

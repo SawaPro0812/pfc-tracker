@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { saveSettings } from '../db/index.js'
 import { ACTIVITY_LEVELS, GOAL_TYPES, calcAll } from '../utils/pfcCalculator.js'
@@ -17,6 +17,7 @@ const form = ref({
 
 const result = ref(null)
 const saving = ref(false)
+const resultCard = ref(null)
 
 const isValid = computed(() =>
   form.value.height > 0 &&
@@ -24,7 +25,7 @@ const isValid = computed(() =>
   form.value.age > 0
 )
 
-function simulate() {
+async function simulate() {
   if (!isValid.value) return
   result.value = calcAll({
     height: Number(form.value.height),
@@ -34,6 +35,8 @@ function simulate() {
     activity_level: form.value.activity_level,
     goal: form.value.goal,
   })
+  await nextTick()
+  resultCard.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function save() {
@@ -126,7 +129,7 @@ async function save() {
     </section>
 
     <!-- 計算結果 -->
-    <section v-if="result" class="card result-card">
+    <section v-if="result" ref="resultCard" class="card result-card">
       <h2>計算結果</h2>
 
       <div class="result-grid">
@@ -146,17 +149,20 @@ async function save() {
 
       <div class="pfc-targets">
         <div class="pfc-item p">
-          <span class="pfc-label">P タンパク質</span>
+          <span class="pfc-letter">P</span>
+          <span class="pfc-name">タンパク質</span>
           <span class="pfc-value">{{ result.target_p }}g</span>
           <span class="pfc-kcal">{{ result.target_p * 4 }}kcal</span>
         </div>
         <div class="pfc-item f">
-          <span class="pfc-label">F 脂質</span>
+          <span class="pfc-letter">F</span>
+          <span class="pfc-name">脂質</span>
           <span class="pfc-value">{{ result.target_f }}g</span>
           <span class="pfc-kcal">{{ result.target_f * 9 }}kcal</span>
         </div>
         <div class="pfc-item c">
-          <span class="pfc-label">C 炭水化物</span>
+          <span class="pfc-letter">C</span>
+          <span class="pfc-name">炭水化物</span>
           <span class="pfc-value">{{ result.target_c }}g</span>
           <span class="pfc-kcal">{{ result.target_c * 4 }}kcal</span>
         </div>
@@ -176,6 +182,7 @@ async function save() {
 <style scoped>
 .screen {
   padding: 24px 16px 40px;
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
   min-height: 100dvh;
 }
 
@@ -377,10 +384,20 @@ async function save() {
 .pfc-item.f { border-top: 2px solid #f59e0b; }
 .pfc-item.c { border-top: 2px solid #34d399; }
 
-.pfc-label {
-  font-size: 0.7rem;
+.pfc-letter {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pfc-item.p .pfc-letter { color: #a78bfa; }
+.pfc-item.f .pfc-letter { color: #f59e0b; }
+.pfc-item.c .pfc-letter { color: #34d399; }
+
+.pfc-name {
+  font-size: 0.65rem;
   color: #64748b;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .pfc-value {

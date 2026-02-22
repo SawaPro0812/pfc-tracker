@@ -13,9 +13,9 @@ export const ACTIVITY_LEVELS = [
 
 // 目標タイプ
 export const GOAL_TYPES = [
-  { value: 'cut',      label: '減量（カット）',    calAdjust: -500 },
-  { value: 'maintain', label: '維持',              calAdjust: 0    },
-  { value: 'bulk',     label: '増量（バルク）',    calAdjust: +350 },
+  { value: 'cut',      label: '減量',  calAdjust: -500 },
+  { value: 'maintain', label: '維持',  calAdjust: 0    },
+  { value: 'bulk',     label: '増量',  calAdjust: +350 },
 ]
 
 /**
